@@ -24,7 +24,7 @@ def _get_arg_with_default(request, arg, setting, default=NO_ARG):
     """
     value = request.param(arg, None)
     if value is None:
-        value = request.config.get_settings().get(setting)
+        value = request.registry.settings.get(setting)
     if value is None:
         if default is NO_ARG:
             raise HTTPBadRequest("Missing argument '{}' and '{}' not found in "
@@ -72,6 +72,7 @@ def send_mail(request):
     s = smtplib.SMTP(host, port)
     s.sendmail(mail_from, mail_to.split(','), email.as_string())
     s.quit()
+    return request.response
 
 def mail(client, subject, body, smtp_to=None, smtp_from=None, smtp_server=None,
          smtp_port=None):
