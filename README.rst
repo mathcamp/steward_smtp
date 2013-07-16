@@ -35,4 +35,4 @@ Permissions
 ::
 
     # This permission is required to send mail
-    mail.perm.mail = group1 group2
+    smtp.perm.mail = group1 group2
