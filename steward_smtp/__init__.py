@@ -46,13 +46,13 @@ def send_mail(request):
         The body of the email
     mail_from : str, optional
         The address to mail from (defaults to value in conf file)
-    mail_to : str
+    mail_to : str or list, optional
         The address(es) to mail to (defaults to value in conf file). Should be
-        a comma-delimited string.
-    smtp_server : str
+        a comma-delimited string or a list.
+    smtp_server : str, optional
         The SMTP server to mail from (defaults to value in conf file or
         'localhost')
-    smtp_port : int
+    smtp_port : int, optional
         The port to use on the SMTP server (defaults to value in conf file or
         25)
 
@@ -70,7 +70,9 @@ def send_mail(request):
     email['From'] = mail_from
     email['To'] = mail_to
     s = smtplib.SMTP(host, port)
-    s.sendmail(mail_from, mail_to.split(','), email.as_string())
+    if isinstance(mail_to, basestring):
+        mail_to = mail_to.split(',')
+    s.sendmail(mail_from, mail_to, email.as_string())
     s.quit()
     return request.response
 
@@ -101,9 +103,9 @@ def mail(client, subject, body, smtp_to=None, smtp_from=None, smtp_server=None,
         'body': body,
     }
     if smtp_to is not None:
-        kwargs['smtp_to'] = smtp_to
+        kwargs['mail_to'] = smtp_to
     if smtp_from is not None:
-        kwargs['smtp_from'] = smtp_from
+        kwargs['mail_from'] = smtp_from
     if smtp_server is not None:
         kwargs['smtp_server'] = smtp_server
     if smtp_port is not None:
