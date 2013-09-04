@@ -64,9 +64,9 @@ def send_mail(request):
     mail_from = _get_arg_with_default(request, 'mail_from', 'smtp.from')
     mail_to = _get_arg_with_default(request, 'mail_to', 'smtp.to')
     try:
-        mail_to = json.loads(mail_to)
+        mail_to = ','.join(json.loads(mail_to))
     except:
-        mail_to = mail_to.split(',')
+        pass
     host = _get_arg_with_default(request, 'smtp_server', 'smtp.server',
                                  'localhost')
     port = _get_arg_with_default(request, 'smtp_port', 'smtp.port', 25)
