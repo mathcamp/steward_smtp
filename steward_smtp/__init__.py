@@ -1,11 +1,14 @@
 """ Steward extension for sending mail via SMTP """
+import json
 import smtplib
 from email.mime.text import MIMEText
+
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 
 
 NO_ARG = object()
+
 
 def _get_arg_with_default(request, arg, setting, default=NO_ARG):
     """
@@ -28,10 +31,11 @@ def _get_arg_with_default(request, arg, setting, default=NO_ARG):
     if value is None:
         if default is NO_ARG:
             raise HTTPBadRequest("Missing argument '{}' and '{}' not found in "
-                                "config file!".format(arg, setting))
+                                 "config file!".format(arg, setting))
         else:
             return default
     return value
+
 
 @view_config(route_name='mail', request_method='POST', permission='mail')
 def send_mail(request):
@@ -59,6 +63,10 @@ def send_mail(request):
     """
     mail_from = _get_arg_with_default(request, 'mail_from', 'smtp.from')
     mail_to = _get_arg_with_default(request, 'mail_to', 'smtp.to')
+    try:
+        mail_to = json.loads(mail_to)
+    except:
+        mail_to = mail_to.split(',')
     host = _get_arg_with_default(request, 'smtp_server', 'smtp.server',
                                  'localhost')
     port = _get_arg_with_default(request, 'smtp_port', 'smtp.port', 25)
@@ -70,11 +78,10 @@ def send_mail(request):
     email['From'] = mail_from
     email['To'] = mail_to
     s = smtplib.SMTP(host, port)
-    if isinstance(mail_to, basestring):
-        mail_to = mail_to.split(',')
     s.sendmail(mail_from, mail_to, email.as_string())
     s.quit()
     return request.response
+
 
 def mail(client, subject, body, smtp_to=None, smtp_from=None, smtp_server=None,
          smtp_port=None):
@@ -112,9 +119,11 @@ def mail(client, subject, body, smtp_to=None, smtp_from=None, smtp_server=None,
         kwargs['smtp_port'] = smtp_port
     client.cmd('mail', **kwargs)
 
+
 def include_client(client):
     """ Add mail command to client """
     client.set_cmd('mail', mail)
+
 
 def includeme(config):
     """ Configure the app """
