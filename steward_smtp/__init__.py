@@ -64,9 +64,10 @@ def send_mail(request):
     mail_from = _get_arg_with_default(request, 'mail_from', 'smtp.from')
     mail_to = _get_arg_with_default(request, 'mail_to', 'smtp.to')
     try:
-        mail_to = ','.join(json.loads(mail_to))
+        mail_to_list = json.loads(mail_to)
+        mail_to = ', '.join(mail_to_list)
     except:
-        pass
+        mail_to_list = [addr.strip() for addr in mail_to.split(',')]
     host = _get_arg_with_default(request, 'smtp_server', 'smtp.server',
                                  'localhost')
     port = _get_arg_with_default(request, 'smtp_port', 'smtp.port', 25)
@@ -78,7 +79,7 @@ def send_mail(request):
     email['From'] = mail_from
     email['To'] = mail_to
     s = smtplib.SMTP(host, port)
-    s.sendmail(mail_from, mail_to, email.as_string())
+    s.sendmail(mail_from, mail_to_list, email.as_string())
     s.quit()
     return request.response
 
