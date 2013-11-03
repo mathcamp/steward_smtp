@@ -37,6 +37,30 @@ def _get_arg_with_default(request, arg, setting, default=NO_ARG):
     return value
 
 
+def mail(config, subject, body, mail_from=None, mail_to=None, host=None, port=None):
+    if mail_from is None:
+        mail_from = config['smtp.from']
+    if mail_to is None:
+        mail_to = config['smtp.to']
+    if host is None:
+        host = config.get('smtp.server', 'localhost')
+    if port is None:
+        port = int(config.get('smtp.port', 25))
+    try:
+        mail_to_list = json.loads(mail_to)
+        mail_to = ', '.join(mail_to_list)
+    except:
+        mail_to_list = [addr.strip() for addr in mail_to.split(',')]
+
+    email = MIMEText(body)
+    email['Subject'] = subject
+    email['From'] = mail_from
+    email['To'] = mail_to
+    s = smtplib.SMTP(host, port)
+    s.sendmail(mail_from, mail_to_list, email.as_string())
+    s.quit()
+
+
 @view_config(route_name='mail', request_method='POST', permission='mail')
 def send_mail(request):
     """
@@ -61,26 +85,10 @@ def send_mail(request):
         25)
 
     """
-    mail_from = _get_arg_with_default(request, 'mail_from', 'smtp.from')
-    mail_to = _get_arg_with_default(request, 'mail_to', 'smtp.to')
-    try:
-        mail_to_list = json.loads(mail_to)
-        mail_to = ', '.join(mail_to_list)
-    except:
-        mail_to_list = [addr.strip() for addr in mail_to.split(',')]
-    host = _get_arg_with_default(request, 'smtp_server', 'smtp.server',
-                                 'localhost')
-    port = _get_arg_with_default(request, 'smtp_port', 'smtp.port', 25)
-    subject = request.param('subject')
-    body = request.param('body')
-
-    email = MIMEText(body)
-    email['Subject'] = subject
-    email['From'] = mail_from
-    email['To'] = mail_to
-    s = smtplib.SMTP(host, port)
-    s.sendmail(mail_from, mail_to_list, email.as_string())
-    s.quit()
+    mail(request.registry.settings,
+         request.param('subject'), request.param('body'),
+         request.param('mail_from', None), request.param('mail_to', None),
+         request.param('host', None), request.param('port', None))
     return request.response
 
 
