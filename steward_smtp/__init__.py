@@ -37,7 +37,9 @@ def _get_arg_with_default(request, arg, setting, default=NO_ARG):
     return value
 
 
-def mail(config, subject, body, mail_from=None, mail_to=None, host=None, port=None):
+def mail(config, subject, body, mail_from=None, mail_to=None, host=None,
+         port=None):
+    """ Send an email """
     if mail_from is None:
         mail_from = config['smtp.from']
     if mail_to is None:
@@ -92,8 +94,8 @@ def send_mail(request):
     return request.response
 
 
-def mail(client, subject, body, smtp_to=None, smtp_from=None, smtp_server=None,
-         smtp_port=None):
+def do_mail(client, subject, body, smtp_to=None, smtp_from=None,
+            smtp_server=None, smtp_port=None):
     """
 
     Send an email via SMTP
@@ -131,7 +133,7 @@ def mail(client, subject, body, smtp_to=None, smtp_from=None, smtp_server=None,
 
 def include_client(client):
     """ Add mail command to client """
-    client.set_cmd('mail', mail)
+    client.set_cmd('mail', do_mail)
 
 
 def includeme(config):
