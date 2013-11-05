@@ -138,6 +138,5 @@ def include_client(client):
 
 def includeme(config):
     """ Configure the app """
-    config.add_acl_from_settings('smtp')
     config.add_route('mail', '/mail')
     config.scan()
