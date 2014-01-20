@@ -48,11 +48,14 @@ def mail(config, subject, body, mail_from=None, mail_to=None, host=None,
         host = config.get('smtp.server', 'localhost')
     if port is None:
         port = int(config.get('smtp.port', 25))
-    try:
-        mail_to_list = json.loads(mail_to)
-        mail_to = ', '.join(mail_to_list)
-    except:
-        mail_to_list = [addr.strip() for addr in mail_to.split(',')]
+    if isinstance(mail_to, list) or isinstance(mail_to, tuple):
+        mail_to_list = mail_to
+    else:
+        try:
+            mail_to_list = json.loads(mail_to)
+            mail_to = ', '.join(mail_to_list)
+        except:
+            mail_to_list = [addr.strip() for addr in mail_to.split(',')]
 
     email = MIMEText(body)
     email['Subject'] = subject
