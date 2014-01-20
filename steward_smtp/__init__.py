@@ -50,6 +50,7 @@ def mail(config, subject, body, mail_from=None, mail_to=None, host=None,
         port = int(config.get('smtp.port', 25))
     if isinstance(mail_to, list) or isinstance(mail_to, tuple):
         mail_to_list = mail_to
+        mail_to = ', '.join(mail_to_list)
     else:
         try:
             mail_to_list = json.loads(mail_to)
